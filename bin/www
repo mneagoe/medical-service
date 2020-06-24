@@ -1,0 +1,117 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+
+const app = require('../app');
+const debug = require('debug')('Medical Service:server');
+const https = require('https');
+const http = require('http');
+const fs = require('fs');
+const config = require('../config');
+
+const credentials = {
+  key: fs.readFileSync('./https/serverkey_pass.pem'),
+  cert: fs.readFileSync('./https/servercert_pass.pem')
+};
+
+/**
+ * Get port from environment and store in Express.
+ */
+
+ const puerto = normalizePort(process.env.PORT || config.puerto);
+ app.set('port', puerto);
+
+/**
+ * Create HTTP server.
+ */
+
+let server = '';
+
+switch (config.protocolo) {
+ case 'http': {
+   server = http.createServer(app);
+   break;
+ }
+ case 'https': {
+   server = https.createServer(credentials, app);
+   break;
+ }
+ default: {
+   console.log('Error: no se ha podido determinar el protocolo para el servidor');
+ }
+}
+
+/**
+ * Listen on provided port, on all network interfaces.
+ */
+
+ server.listen(puerto, () =>
+   console.log(`Medical Service: modo ${ config.entorno }`,
+     `/ puerto ${ puerto }`,
+     `/ protocolo ${ config.protocolo }`
+   )
+ );
+server.on('error', onError);
+server.on('listening', onListening);
+
+/**
+ * Normalize a port into a number, string, or false.
+ */
+
+function normalizePort(val) {
+  var port = parseInt(val, 10);
+
+  if (isNaN(port)) {
+    // named pipe
+    return val;
+  }
+
+  if (port >= 0) {
+    // port number
+    return port;
+  }
+
+  return false;
+}
+
+/**
+ * Event listener for HTTP server "error" event.
+ */
+
+function onError(error) {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+
+  var bind = typeof puerto === 'string'
+    ? 'Pipe ' + puerto
+    : 'Port ' + puerto;
+
+  // handle specific listen errors with friendly messages
+  switch (error.code) {
+    case 'EACCES':
+      console.error(bind + ' requires elevated privileges');
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(bind + ' is already in use');
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+}
+
+/**
+ * Event listener for HTTP server "listening" event.
+ */
+
+function onListening() {
+  var addr = server.address();
+  var bind = typeof addr === 'string'
+    ? 'pipe ' + addr
+    : 'port ' + addr.port;
+  debug('Listening on ' + bind);
+}

@@ -1,0 +1,58 @@
+before_script:
+   - echo "Before script section"
+   - whoami
+   - pwd
+#   - echo "Or perhaps you might print out some debugging details"
+
+after_script:
+  - echo " INICIO After script section"
+  - echo " FIN After script section "
+
+cache:
+  paths:
+    - node_modules/
+
+stages:
+  - dependencias
+  - build
+  - test
+  - deploy
+
+#Development CI
+dependencias_desa:
+ stage: dependencias
+ script:
+   - echo " REALIZANDO DEPLOY "
+   - npm install
+   - npm -v
+   - node -v
+   - echo " FINALIZANDO DEPLOY "
+ only:
+  - desa
+
+build_desa:
+ stage: build
+ script:
+   - echo " REALIZANDO DEPLOY "
+   - sudo -u wwwrun rm -rf /srv/www/desa/medical/api/
+   - sudo -u wwwrun cp -r ./ /srv/www/desa/medical/api
+   - echo " FINALIZANDO DEPLOY "
+ artifacts:
+  untracked: true
+ only:
+  - desa
+
+deploy_desa:
+ stage: deploy
+ script:
+   - echo " REALIZANDO DEPLOY"
+   - cd /srv/www/desa/medical/api
+   - if [ $(pm2 list | grep "Medical Service"| awk  '{print $2}' |wc -l) -eq 0 ]; then pm2 list; else pm2 delete "Medical Service"; fi
+   - pm2 start ecosystem.config.js --env desarrollo
+   - pm2 show "Medical Service"
+   - echo " FINALIZANDO DEPLOY "
+ environment:
+    name: desarrollo
+    url: 
+ only:
+  - desa

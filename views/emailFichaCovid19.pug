@@ -1,0 +1,35 @@
+doctype transitional
+html
+	head
+		meta(http-equiv = 'Content-Type', content = 'text/html; charset=UTF-8')
+		title= subject
+		style.
+			*{font-family:"Helvetica Neue","Helvetica",Helvetica,Arial,sans-serif}
+		body
+
+			h1.h1 MEDICAL SERVICE
+			//- h2.h2 Novedades del día:
+			h2.h2 ACTUALIZACIONES:
+				each ficha in reporte
+					h3.h3 #{ficha.nombre} #{ficha.apellido}, DNI: #{ficha.dni}
+					if ficha.newFactor
+						p
+							strong Factor de riesgo:
+							|  #{ficha.oldFactor} => #{ficha.newFactor}
+
+					if ficha.newCuarentena
+						p
+							strong Cuarentena por viaje:
+							|  #{ficha.oldCuarentena} => #{ficha.newCuarentena}
+
+					if ficha.newFecha
+						p
+							strong Fecha de retorno:
+							|  #{ficha.oldFecha} => #{ficha.newFecha}
+
+					if ficha.newGrupo
+						p
+							strong Grupo Covid19:
+							|  #{ficha.oldGrupo} => #{ficha.newGrupo}
+					br
+				
